@@ -28,7 +28,7 @@ EBTNodeResult::Type UBTT_FindHouseExit::ExecuteTask(UBehaviorTreeComponent& Owne
 	const FHouseBounds Bounds = house->GetBounds();
 	FBox Box(Bounds.Origin - Bounds.Extent,Bounds.Origin + Bounds.Extent);
 	
-	FVector Exit = GetRandomPointOutsideBox(Box, 2500);
+	FVector Exit = GetRandomPointOutsideBox(Box, 200);
 	BB->SetValueAsVector(FName("TargetLocation"), Exit);
 	
 	return EBTNodeResult::Succeeded;
