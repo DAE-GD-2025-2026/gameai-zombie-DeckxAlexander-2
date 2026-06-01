@@ -23,4 +23,40 @@ public:
 
 	UFUNCTION()
 	virtual void OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);
+	
+	
+	const TArray<AActor*>& GetSeenItems() {return m_SeenItems;};
+	const TArray<AActor*>& GetItemMemory() {return m_ItemsInMemory;};
+	const TArray<AActor*>& GetSeenHouses() {return m_SeenUnExploredHouses;};
+	const TArray<AActor*>& GetSeenZombies() {return m_SeenZombies;};
+	
+	void RemoveItemFromMemory(AActor* Actor);
+	void SetItemInMemory(AActor* Actor);
+	
+	void SetHouseAsExplored(AActor* Actor);
+	bool CheckIfInHouse();
+	
+	AActor* GetCurrentHouse() const {return m_CurrentHouse;}
+	
+private:
+	
+	//Itens
+	void AddItemToSeen(AActor* Actor);
+
+	TArray<AActor*> m_SeenItems{};
+	TArray<AActor*> m_ItemsInMemory{};
+	
+	
+	//Houses
+	void AddHouseToMemory(AActor* Actor);
+
+	
+	TArray<AActor*> m_SeenUnExploredHouses{};
+	TArray<AActor*> m_ExploredHouses{};
+	
+	AActor* m_CurrentHouse{};
+	
+	//Zombies
+	void AddZombieToMemory(AActor* Actor);
+	TArray<AActor*> m_SeenZombies{};
 };
