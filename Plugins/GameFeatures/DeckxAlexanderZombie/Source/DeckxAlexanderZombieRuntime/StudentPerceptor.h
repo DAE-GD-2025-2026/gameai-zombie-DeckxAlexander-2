@@ -62,4 +62,7 @@ private:
 	void AddZombieToMemory(AActor* Actor);
 	TArray<AActor*> m_SeenZombies{};
 	TArray<AActor*> m_KilledZombies{};
+	
+	
+
 };

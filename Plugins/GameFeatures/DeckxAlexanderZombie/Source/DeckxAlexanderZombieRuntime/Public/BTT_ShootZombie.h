@@ -7,6 +7,7 @@
 #include "BTT_ShootZombie.generated.h"
 
 class UInventoryComponent;
+class UStudentPerceptor;
 /**
  * 
  */
@@ -24,11 +25,21 @@ protected:
 	UBehaviorTreeComponent& OwnerComp,
 	uint8* NodeMemory) override;
 	
+	virtual void TickTask(
+	UBehaviorTreeComponent& OwnerComp,
+	uint8* NodeMemory,
+	float DeltaSeconds) override;
+	
 	int GetWeaponSlot(UInventoryComponent* inventory);
 	AActor* GetClosestZombie(TArray<AActor*> zombies);
 	
-	void TurnTowardsZombie(AActor* target);
+	bool TurnTowardsZombie(AActor* target, float deltaTime);
 	
 private:
 	APawn* m_OwnerPawn{};
+	
+	AActor* m_ClosestZombie{};
+	UInventoryComponent* m_Inventory{};
+	UStudentPerceptor* m_Perceptor{};
+	int m_WeaponSlot{};
 };

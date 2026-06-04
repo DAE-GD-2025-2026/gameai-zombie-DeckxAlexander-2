@@ -8,10 +8,12 @@
 #include "DeckxAlexanderZombieRuntime/StudentPerceptor.h"
 #include "Items/BaseItem.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Zombies/BaseZombie.h"
 
 
 UBTT_ShootZombie::UBTT_ShootZombie()
 {
+	bNotifyTick = true;
 }
 
 EBTNodeResult::Type UBTT_ShootZombie::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -23,35 +25,54 @@ EBTNodeResult::Type UBTT_ShootZombie::ExecuteTask(UBehaviorTreeComponent& OwnerC
 	if (!Survivor)return EBTNodeResult::Failed;
 	UBlackboardComponent* BB = OwnerComp.GetBlackboardComponent();
 	if (!BB) return  EBTNodeResult::Failed;
-	UStudentPerceptor* perceptor = Survivor->FindComponentByClass<UStudentPerceptor>();
-	if (!perceptor) return EBTNodeResult::Failed;
+	m_Perceptor = Survivor->FindComponentByClass<UStudentPerceptor>();
+	if (!m_Perceptor) return EBTNodeResult::Failed;
 	
-	auto closest = GetClosestZombie(perceptor->GetSeenZombies());
-	if (!closest)
+	m_ClosestZombie = GetClosestZombie(m_Perceptor->GetSeenZombies());
+	if (!m_ClosestZombie)
 	{
-		BB->SetValueAsBool(FName("zombieClose"), false);
+		BB->SetValueAsBool(FName("ZombieClose"), false);
 		return EBTNodeResult::Failed;
 	}
-	UInventoryComponent* inventory = Survivor->FindComponentByClass<UInventoryComponent>();
-	auto weapon = GetWeaponSlot(inventory);
-	if (weapon == -1)
+	
+	m_Inventory = m_OwnerPawn->FindComponentByClass<UInventoryComponent>();
+	m_WeaponSlot = GetWeaponSlot(m_Inventory);
+	if (m_WeaponSlot == -1)
 	{
 		BB->SetValueAsBool(FName("hasWeapon"), false);
 		return EBTNodeResult::Failed;
 	}
 	
-	TurnTowardsZombie(closest);
-	inventory->UseItem(weapon);
+
+	return EBTNodeResult::InProgress;
+}
+
+void UBTT_ShootZombie::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
+{
+	Super::TickTask(OwnerComp, NodeMemory, DeltaSeconds);
 	
-	perceptor->SetZombieKilled(closest);
-	
-	if (inventory->GetInventory()[weapon]->GetValue() <= 0)
+	if (!m_ClosestZombie || IsValid(m_ClosestZombie) )
 	{
-		inventory->RemoveItem(weapon);
+		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 	}
 	
-
-	return EBTNodeResult::Succeeded;
+	if ( TurnTowardsZombie(m_ClosestZombie, DeltaSeconds))
+	{
+		m_Inventory->UseItem(m_WeaponSlot);
+	
+		if (m_Inventory->GetInventory()[m_WeaponSlot]->GetValue() <= 0)
+		{
+			m_Inventory->RemoveItem(m_WeaponSlot);
+		}
+		
+		if (IsValid(m_ClosestZombie))
+		{
+			return;
+		}
+		
+		m_Perceptor->SetZombieKilled(m_ClosestZombie);
+		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+	}
 }
 
 int UBTT_ShootZombie::GetWeaponSlot(UInventoryComponent* inventory)
@@ -84,7 +105,7 @@ AActor* UBTT_ShootZombie::GetClosestZombie(TArray<AActor*> zombies)
 	
 	for (auto z : zombies)
 	{
-		if (!IsValid(z)) continue;
+		if (!z || !IsValid(z)) continue;
 		
 		if (!result)
 		{
@@ -102,9 +123,30 @@ AActor* UBTT_ShootZombie::GetClosestZombie(TArray<AActor*> zombies)
 	return result;
 }
 
-void UBTT_ShootZombie::TurnTowardsZombie(AActor* target)
+bool UBTT_ShootZombie::TurnTowardsZombie(AActor* target, float deltaTime)
 {
 	FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(m_OwnerPawn->GetActorLocation(),target->GetActorLocation());
+	
+	TargetRotation.Pitch = 0.f;
+	TargetRotation.Roll = 0.f;
+	
+	FRotator NewRotation = FMath::RInterpTo(
+		m_OwnerPawn->GetActorRotation(),
+		TargetRotation,
+		deltaTime,
+		12.f);
 
-	m_OwnerPawn->SetActorRotation(TargetRotation);
+	m_OwnerPawn->SetActorRotation(NewRotation);
+
+	float YawDifference = FMath::Abs(
+		FMath::FindDeltaAngleDegrees(
+			NewRotation.Yaw,
+			TargetRotation.Yaw));
+
+	if (YawDifference < 2.0f) 
+	{
+		return true;
+	}
+	
+	return false;
 }

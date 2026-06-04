@@ -30,4 +30,10 @@ protected:
 	void CheckItems(UStudentPerceptor* perceptor, UBlackboardComponent* bb);
 	void CheckHouses(UStudentPerceptor* perceptor, UBlackboardComponent* bb);
 	void CheckZombies(UStudentPerceptor* perceptor, UBlackboardComponent* bb, FVector survivorLoc);
+	
+	void CheckSurvivorStats(APawn* survivorPawn, UBlackboardComponent* bb);
+	void CheckItemsInInventory(UInventoryComponent* inventory, UBlackboardComponent* bb);
+	
+private:
+	float m_PreviousHealth;
 };

@@ -71,7 +71,7 @@ EBTNodeResult::Type UBTT_SearchItem::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 	
 
 	
-	if (!Priorities.IsEmpty())
+	/*if (!Priorities.IsEmpty())
 	{
 		//Inacse needed item not seen
 		auto memory = perceptor->GetItemMemory();
@@ -86,7 +86,7 @@ EBTNodeResult::Type UBTT_SearchItem::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 				return EBTNodeResult::Succeeded;
 			}
 		}
-	}
+	}*/
 	
 	if (closestItem && !IsInventoryFull(inventory))
 	{

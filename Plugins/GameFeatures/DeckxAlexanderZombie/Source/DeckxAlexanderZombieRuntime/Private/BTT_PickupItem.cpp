@@ -26,13 +26,14 @@ EBTNodeResult::Type UBTT_PickupItem::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 	UInventoryComponent* inventory = Survivor->FindComponentByClass<UInventoryComponent>();
 	
 	auto item = Cast<ABaseItem>(BB->GetValueAsObject(FName("TargetItem")));
+	auto itemType = item->GetItemType();
+	
+	
 	if (!item)
 	{
 		BB->SetValueAsBool(FName("SeenItem"), false);
 		return EBTNodeResult::Failed;
 	}
-	
-	
 	perceptor->RemoveItemFromMemory(item);
 	
 	if (IsInventoryFull(inventory))
@@ -46,11 +47,17 @@ EBTNodeResult::Type UBTT_PickupItem::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 		{
 			
 			BB->SetValueAsObject(FName("TargetItem"), nullptr);
-			CheckItems(inventory, BB);
+			
+			if (item->GetItemType() == EItemType::Garbage) inventory->RemoveItem(slot); //Instantly remove garbage when picked up
+			
+			//CheckItems(inventory, BB);
 			break;
 		}
 
 	}
+	
+
+	
 	
 
 	return EBTNodeResult::Succeeded;

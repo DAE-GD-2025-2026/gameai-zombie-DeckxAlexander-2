@@ -2,14 +2,20 @@
 
 
 #include "StudentPerceptor.h"
+#include "AIController.h"
+#include "BehaviorTree/BlackboardComponent.h"
 #include "Items/BaseItem.h"
 #include "Zombies/BaseZombie.h"
 #include "Village/House/House.h"
+#include "Perception/AISenseConfig_Damage.h"
+#include "Perception/AISense_Damage.h"
 
 
 UStudentPerceptor::UStudentPerceptor()
 {
 	PrimaryComponentTick.bCanEverTick = true;
+	
+
 }
 
 void UStudentPerceptor::BeginPlay()
@@ -20,6 +26,8 @@ void UStudentPerceptor::BeginPlay()
 	{
 		PerceptionComp->OnTargetPerceptionUpdated.AddDynamic(this, &UStudentPerceptor::OnPerceptionUpdated);
 	}
+	
+
 }
 
 void UStudentPerceptor::OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
@@ -42,6 +50,8 @@ void UStudentPerceptor::OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 	{
 		AddZombieToMemory(Actor);
 	}
+	
+	
 }
 
 void UStudentPerceptor::AddItemToSeen(AActor* Actor)
@@ -148,6 +158,7 @@ bool UStudentPerceptor::CheckIfInHouse()
 
 void UStudentPerceptor::SetZombieKilled(AActor* Actor)
 {
+	if (m_KilledZombies.Contains(Actor)) return;
 	m_SeenZombies.Remove(Actor);
 	m_KilledZombies.Add(Actor);
 }
@@ -173,3 +184,5 @@ void UStudentPerceptor::AddZombieToMemory(AActor* Actor)
 	
 	
 }
+
+

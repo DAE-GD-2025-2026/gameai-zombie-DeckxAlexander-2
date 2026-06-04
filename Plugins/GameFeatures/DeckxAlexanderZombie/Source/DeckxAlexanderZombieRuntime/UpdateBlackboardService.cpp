@@ -5,12 +5,13 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Items/BaseItem.h"
 #include "UpdateBlackboardService.h"
+#include "Common/InventoryComponent.h"
 
 UUpdateBlackboardService::UUpdateBlackboardService()
 {
 	NodeName = TEXT("Update Blackboard");
 
-	Interval = 1.0f;
+	Interval = 0.5f;
 	RandomDeviation = 0.2f;
 }
 
@@ -30,7 +31,9 @@ void UUpdateBlackboardService::TickNode(UBehaviorTreeComponent& OwnerComp, uint8
 	CheckItems(perceptor, BB);
 	CheckHouses(perceptor, BB);
 	CheckZombies(perceptor, BB, Survivor->GetActorLocation());
-
+	CheckSurvivorStats(Survivor, BB);
+	auto inventory = Survivor->GetComponentByClass<UInventoryComponent>();
+	CheckItemsInInventory(inventory, BB);
 	
 	
 	
@@ -71,6 +74,73 @@ void UUpdateBlackboardService::CheckZombies(UStudentPerceptor* perceptor, UBlack
 		zombieClose = true;
 
 	}
-	bb->SetValueAsBool(FName("zombieClose"), zombieClose);
+	bb->SetValueAsBool(FName("ZombieClose"), zombieClose);
 }
+
+void UUpdateBlackboardService::CheckSurvivorStats(APawn* survivorPawn, UBlackboardComponent* bb)
+{
+	auto healthComponent = survivorPawn->GetComponentByClass<UHealthComponent>();
+	bool lowHealth = false;
+	bool lowStamina = false;
+	
+	float health = healthComponent->GetHealth();
+	if (healthComponent && health < 3.f)
+	{
+		lowHealth = true;
+	}
+	
+	auto staminaComponent = survivorPawn->GetComponentByClass<UStaminaComponent>();
+	
+	if (staminaComponent && staminaComponent->GetCurrentStamina() < 3.f)
+	{
+		lowStamina = true;
+	}
+	bb->SetValueAsBool(FName("LowHealth"), lowHealth);
+	bb->SetValueAsBool(FName("LowStamina"), lowStamina);
+	
+	//Check Health for unknown damaged
+	if (health < m_PreviousHealth && bb->GetValueAsBool(FName("ZombieClose")) == false)
+	{
+		bb->SetValueAsBool(FName("LookAround"), true);
+	}
+	m_PreviousHealth = health;
+}
+
+void UUpdateBlackboardService::CheckItemsInInventory(UInventoryComponent* inventory, UBlackboardComponent* bb)
+{
+	bool hasFood = false;
+	bool hasMedkit = false;
+	bool hasWeapon = false;
+	
+
+	for (auto item : inventory->GetInventory())
+	{
+		if (!item) continue;
+		auto type = item->GetItemType();
+		switch (type)
+		{
+		case EItemType::Shotgun:
+			hasWeapon = true;
+			break;
+		case EItemType::Pistol:
+			hasWeapon = true;
+			break;
+		case EItemType::Medkit:
+			hasMedkit = true;
+			break;
+		case EItemType::Food:
+			hasFood = true;
+			break;
+		case EItemType::Garbage:
+			break;
+		}
+		
+	}
+	
+	bb->SetValueAsBool(FName("HasMedkit"), hasMedkit);
+	bb->SetValueAsBool(FName("hasWeapon"), hasWeapon);
+	bb->SetValueAsBool(FName("HasFood"), hasFood);
+}
+
+
 
