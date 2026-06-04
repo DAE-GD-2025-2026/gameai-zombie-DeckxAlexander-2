@@ -35,12 +35,12 @@ void UStudentPerceptor::OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 	
 	if (Actor->IsA(ABaseItem::StaticClass()))
 	{
-		m_SeenItems.Add(Actor);
+		AddItemToSeen(Actor);
 	}
 	
 	if (Actor->IsA(ABaseZombie::StaticClass()))
 	{
-		m_SeenZombies.Add(Actor);
+		AddZombieToMemory(Actor);
 	}
 }
 
@@ -63,6 +63,7 @@ void UStudentPerceptor::AddItemToSeen(AActor* Actor)
 void UStudentPerceptor::SetItemInMemory(AActor* Actor)
 {
 	m_SeenItems.Remove(Actor);
+	if (m_ItemsInMemory.Contains(Actor)) return;
 	m_ItemsInMemory.Add(Actor);
 	
 	FVector actorloc = GetOwner()->GetActorLocation();
@@ -143,6 +144,12 @@ bool UStudentPerceptor::CheckIfInHouse()
 	return false;
 	
 	
+}
+
+void UStudentPerceptor::SetZombieKilled(AActor* Actor)
+{
+	m_SeenZombies.Remove(Actor);
+	m_KilledZombies.Add(Actor);
 }
 
 void UStudentPerceptor::RemoveItemFromMemory(AActor* Actor)

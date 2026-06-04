@@ -40,6 +40,17 @@ void UUpdateBlackboardService::TickNode(UBehaviorTreeComponent& OwnerComp, uint8
 void UUpdateBlackboardService::CheckItems(UStudentPerceptor* perceptor, UBlackboardComponent* bb)
 {
 	bb->SetValueAsBool(FName("SeenItem"), !perceptor->GetSeenItems().IsEmpty());
+	
+	GEngine->AddOnScreenDebugMessage(
+		9,
+		1.f,
+		FColor::Blue,
+		FString::Printf(
+			TEXT("Items Seen: %.2f"),
+			static_cast<float>(perceptor->GetSeenItems().Num())
+		)
+	);
+	
 }
 
 void UUpdateBlackboardService::CheckHouses(UStudentPerceptor* perceptor, UBlackboardComponent* bb)
@@ -56,7 +67,7 @@ void UUpdateBlackboardService::CheckZombies(UStudentPerceptor* perceptor, UBlack
 	bool zombieClose = false;
 	for (auto actor : perceptor->GetSeenZombies())
 	{
-		if (FVector::DistSquared(actor->GetActorLocation(), survivorLoc) > 2500.f) continue;
+		if (FVector::DistSquared(actor->GetActorLocation(), survivorLoc) > (600*600)) continue;
 		zombieClose = true;
 
 	}

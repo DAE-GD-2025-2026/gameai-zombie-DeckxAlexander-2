@@ -24,7 +24,7 @@ EBTNodeResult::Type UBTT_SearchItem::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 	
 
 	//Check Priorities
-	//TArray<EItemType> priorities;
+	TArray<EItemType> Priorities;
 	//float health = BB->GetValueAsFloat(FName("Health"));
 	//float stamina = BB->GetValueAsFloat(FName("Stamina"));
 	//bool hasWeapon =  BB->GetValueAsBool(FName("HasWeapon"));
@@ -36,6 +36,9 @@ EBTNodeResult::Type UBTT_SearchItem::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 		//priorities.Add(EItemType::Shotgun);
 	//}
 	
+	
+	
+	
 	UInventoryComponent* inventory = Survivor->FindComponentByClass<UInventoryComponent>();
 	
 	if (perceptor->GetSeenItems().Num() == 0)
@@ -44,24 +47,21 @@ EBTNodeResult::Type UBTT_SearchItem::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 		return EBTNodeResult::Failed;
 	}
 	
-	ABaseItem* closestItem = nullptr;
+	ABaseItem* closestItem = Cast<ABaseItem>(perceptor->GetSeenItems()[0]);
 	TArray<ABaseItem*> itemsSkipped{};
 	
 	for (AActor* actor : perceptor->GetSeenItems() )
 	{
 		auto item = Cast<ABaseItem>(actor);
-		if (inventory->GetInventory().ContainsByPredicate([item](const ABaseItem* InventoryItem){return InventoryItem && InventoryItem->GetItemType() == item->GetItemType();}))
-		{
-			itemsSkipped.Add(item);
-			continue;
-		}
-
-		if (Priorities.IsEmpty() || Priorities.Contains(item->GetItemType()))
+		if ((Priorities.IsEmpty()&& !IsInventoryFull(inventory)) || Priorities.Contains(item->GetItemType()))
 		{
 			closestItem = item;
 			break;
 			
 		}
+		itemsSkipped.Add(item);
+		continue;
+		
 	}
 	
 	for (auto item : itemsSkipped)
@@ -69,12 +69,6 @@ EBTNodeResult::Type UBTT_SearchItem::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 		perceptor->SetItemInMemory(item);
 	}
 	
-	if (closestItem)
-	{
-		BB->SetValueAsObject(FName("TargetItem"), closestItem);
-		BB->SetValueAsVector(FName("TargetLocation"), closestItem->GetActorLocation());
-		return EBTNodeResult::Succeeded;
-	}
 
 	
 	if (!Priorities.IsEmpty())
@@ -94,8 +88,25 @@ EBTNodeResult::Type UBTT_SearchItem::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 		}
 	}
 	
+	if (closestItem && !IsInventoryFull(inventory))
+	{
+		BB->SetValueAsObject(FName("TargetItem"), closestItem);
+		BB->SetValueAsVector(FName("TargetLocation"), closestItem->GetActorLocation());
+		return EBTNodeResult::Succeeded;
+	}
 	
 	BB->SetValueAsBool(FName("SeenItem"), false);
 	
 	return EBTNodeResult::Failed;
 }
+
+bool UBTT_SearchItem::IsInventoryFull(UInventoryComponent* inventory)
+{
+	if (!inventory)return false;
+	for (auto item : inventory->GetInventory())
+	{
+		if (!item)return false;
+	}
+	return true;
+}
+

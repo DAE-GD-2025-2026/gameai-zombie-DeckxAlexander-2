@@ -36,6 +36,8 @@ public:
 	void SetHouseAsExplored(AActor* Actor);
 	bool CheckIfInHouse();
 	
+	void SetZombieKilled(AActor* Actor);
+	
 	AActor* GetCurrentHouse() const {return m_CurrentHouse;}
 	
 private:
@@ -59,4 +61,5 @@ private:
 	//Zombies
 	void AddZombieToMemory(AActor* Actor);
 	TArray<AActor*> m_SeenZombies{};
+	TArray<AActor*> m_KilledZombies{};
 };

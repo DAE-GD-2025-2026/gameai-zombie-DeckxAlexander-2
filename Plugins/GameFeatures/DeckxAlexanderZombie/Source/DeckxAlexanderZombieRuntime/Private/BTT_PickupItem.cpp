@@ -26,12 +26,80 @@ EBTNodeResult::Type UBTT_PickupItem::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 	UInventoryComponent* inventory = Survivor->FindComponentByClass<UInventoryComponent>();
 	
 	auto item = Cast<ABaseItem>(BB->GetValueAsObject(FName("TargetItem")));
-	if (!item) return EBTNodeResult::Failed;
-	int slot = static_cast<int>(item->GetItemType());
+	if (!item)
+	{
+		BB->SetValueAsBool(FName("SeenItem"), false);
+		return EBTNodeResult::Failed;
+	}
+	
 	
 	perceptor->RemoveItemFromMemory(item);
-	inventory->GrabItem(slot, item);
 	
-	BB->SetValueAsObject(FName("TargetItem"), nullptr);
+	if (IsInventoryFull(inventory))
+	{
+		inventory->RemoveItem(4); //TODO remove item based on priority
+	}
+	
+	for (int slot{}; slot < inventory->GetInventory().Num(); ++slot)
+	{
+		if (inventory->GrabItem(slot, item))
+		{
+			
+			BB->SetValueAsObject(FName("TargetItem"), nullptr);
+			CheckItems(inventory, BB);
+			break;
+		}
+
+	}
+	
+
 	return EBTNodeResult::Succeeded;
+
+}
+
+bool UBTT_PickupItem::IsInventoryFull(UInventoryComponent* inventory)
+{
+	if (!inventory)return false;
+	for (auto item : inventory->GetInventory())
+	{
+		if (!item)return false;
+	}
+	return true;
+}
+
+void UBTT_PickupItem::CheckItems(UInventoryComponent* inventory, UBlackboardComponent* bb)
+{
+	bool hasFood = false;
+	bool hasMedkit = false;
+	bool hasWeapon = false;
+	
+	for (auto item : inventory->GetInventory())
+	{
+		if (!item) continue;
+		auto type = item->GetItemType();
+		switch (type)
+		{
+		case EItemType::Shotgun:
+			hasWeapon = true;
+			break;
+		case EItemType::Pistol:
+			hasWeapon = true;
+			break;
+		case EItemType::Medkit:
+			hasMedkit = true;
+			break;
+		case EItemType::Food:
+			hasFood = true;
+			break;
+		case EItemType::Garbage:
+			break;
+		}
+		
+	}
+	
+	bb->SetValueAsBool(FName("hasMedkit"), hasMedkit);
+	bb->SetValueAsBool(FName("hasWeapon"), hasWeapon);
+	bb->SetValueAsBool(FName("hasFood"), hasFood);
+	
+	
 }

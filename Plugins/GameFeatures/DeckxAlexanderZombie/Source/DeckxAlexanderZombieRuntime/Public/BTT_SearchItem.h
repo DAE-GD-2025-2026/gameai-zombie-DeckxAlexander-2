@@ -10,6 +10,7 @@
 /**
  * 
  */
+class UInventoryComponent;
 UCLASS()
 class DECKXALEXANDERZOMBIERUNTIME_API UBTT_SearchItem : public UBTTaskNode
 {
@@ -17,14 +18,13 @@ class DECKXALEXANDERZOMBIERUNTIME_API UBTT_SearchItem : public UBTTaskNode
 public:
 	UBTT_SearchItem();
 
-	
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	TArray<EItemType> Priorities;
-	
 
 protected:
 	
 	virtual EBTNodeResult::Type ExecuteTask(
 	UBehaviorTreeComponent& OwnerComp,
 	uint8* NodeMemory) override;
+	
+	bool IsInventoryFull(UInventoryComponent* inventory);
+
 };

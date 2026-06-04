@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
+#include "Common/InventoryComponent.h"
 #include "BTT_PickupItem.generated.h"
 
 /**
@@ -21,4 +22,8 @@ protected:
 	virtual EBTNodeResult::Type ExecuteTask(
 	UBehaviorTreeComponent& OwnerComp,
 	uint8* NodeMemory) override;
+	
+	bool IsInventoryFull(UInventoryComponent* inventory);
+		
+	void CheckItems(UInventoryComponent* inventory, UBlackboardComponent* bb);
 };
