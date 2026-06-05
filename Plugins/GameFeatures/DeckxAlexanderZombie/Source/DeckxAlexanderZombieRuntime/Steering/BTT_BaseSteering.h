@@ -9,6 +9,7 @@
 /**
  * 
  */
+class UBlackboardComponent;
 UCLASS()
 class DECKXALEXANDERZOMBIERUNTIME_API UBTT_BaseSteering : public UBTTaskNode
 {
@@ -28,14 +29,18 @@ protected:
 	
 	void RotateTowardsMovement(APawn* Pawn, FVector movementdir,  float DeltaTime);
 	FVector CalculateObstacleAvoidance();
+	FVector PurgeAvoidance();
 	
 	
 	virtual FVector CalculateDesiredVelocity() {return FVector::ZeroVector;}
 	
-	APawn* m_OwnerPawn;
+	APawn* m_OwnerPawn{};
+	UBlackboardComponent* m_BlackboardComponent{};
 	
 private:
 	FVector CalculateAvoidanceInDirection(const FVector& position, const FVector& direction, float lookAheadDistance, float weight);
 	
 	FCollisionQueryParams m_CollisionQueryParams;
+	
+
 };

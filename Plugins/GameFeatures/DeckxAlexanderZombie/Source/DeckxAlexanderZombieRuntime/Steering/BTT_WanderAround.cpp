@@ -37,9 +37,10 @@ FVector UBTT_WanderAround::CalculateDesiredVelocity()
 	
 	FVector wanderVelocity = {DesiredVelocity.X, DesiredVelocity.Y, 0};
 	FVector avoidanceVelocity = CalculateObstacleAvoidance();
+	FVector purgeAvoidanceVelocity = PurgeAvoidance();
 	
 	
-	FVector finalVelocity = wanderVelocity + avoidanceVelocity * 1;
+	FVector finalVelocity = wanderVelocity + (avoidanceVelocity) + (purgeAvoidanceVelocity*5.f);
 	finalVelocity.Z = 0;
 	finalVelocity.Normalize();
 	

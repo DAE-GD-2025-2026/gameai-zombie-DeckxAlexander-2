@@ -9,6 +9,7 @@
 #include "Village/House/House.h"
 #include "Perception/AISenseConfig_Damage.h"
 #include "Perception/AISense_Damage.h"
+#include "PurgeZones/PurgeZone.h"
 
 
 UStudentPerceptor::UStudentPerceptor()
@@ -32,26 +33,36 @@ void UStudentPerceptor::BeginPlay()
 
 void UStudentPerceptor::OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 {
-	GEngine->AddOnScreenDebugMessage(5, 1.f, FColor::Green, 
-	FString::Printf(TEXT("Saw Something!")));
+
 	
 	
 	if (Actor->IsA(AHouse::StaticClass()))
 	{
 		AddHouseToMemory(Actor);
+		GEngine->AddOnScreenDebugMessage(5, 1.f, FColor::Green, 
+FString::Printf(TEXT("Saw HOUSE!")));
 	}
 	
 	if (Actor->IsA(ABaseItem::StaticClass()))
 	{
 		AddItemToSeen(Actor);
+		GEngine->AddOnScreenDebugMessage(5, 1.f, FColor::Green, 
+FString::Printf(TEXT("Saw ITEM!")));
 	}
 	
 	if (Actor->IsA(ABaseZombie::StaticClass()))
 	{
 		AddZombieToMemory(Actor);
+		GEngine->AddOnScreenDebugMessage(5, 1.f, FColor::Green, 
+FString::Printf(TEXT("Saw ZOMBIE!")));
 	}
-	
-	
+	if (Actor->IsA(APurgeZone::StaticClass()))
+	{
+		AddPurgeZoneToMemory(Actor);
+		GEngine->AddOnScreenDebugMessage(5, 1.f, FColor::Green, 
+FString::Printf(TEXT("Saw PURGE!")));
+	}
+
 }
 
 AActor* UStudentPerceptor::GetClosestPurgeZone()
@@ -164,7 +175,6 @@ bool UStudentPerceptor::CheckIfInHouse()
 			if (FMath::PointBoxIntersection(GetOwner()->GetActorLocation(), Box))
 			{
 				m_CurrentHouse = actor;
-				SetHouseAsExplored(m_CurrentHouse);
 				return true;
 			}
 		}
@@ -176,7 +186,9 @@ bool UStudentPerceptor::CheckIfInHouse()
 		FBox Box(Bounds.Origin - Bounds.Extent,Bounds.Origin + Bounds.Extent);
 		if (FMath::PointBoxIntersection(GetOwner()->GetActorLocation(), Box))
 		{
+			SetHouseAsExplored(m_CurrentHouse);
 			return true;
+			
 		}
 	}
 	
@@ -202,8 +214,10 @@ void UStudentPerceptor::RemoveItemFromMemory(AActor* Actor)
 
 void UStudentPerceptor::SetHouseAsExplored(AActor* Actor)
 {
-	m_ExploredHouses.Add(Actor);
 	m_SeenUnExploredHouses.Remove(Actor);
+	if (m_ExploredHouses.Contains(Actor)) return;
+	m_ExploredHouses.Add(Actor);
+
 	
 }
 

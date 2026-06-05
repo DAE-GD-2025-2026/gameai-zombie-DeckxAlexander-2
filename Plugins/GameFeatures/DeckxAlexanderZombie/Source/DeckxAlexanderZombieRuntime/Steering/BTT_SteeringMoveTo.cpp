@@ -19,16 +19,17 @@ EBTNodeResult::Type UBTT_SteeringMoveTo::ExecuteTask(UBehaviorTreeComponent& Own
 {
 	m_OwnerPawn = Cast<APawn>(OwnerComp.GetAIOwner()->GetPawn());
 	if (!m_OwnerPawn) return EBTNodeResult::Failed;
+
 	
 	m_CurrentIndex = 0;
 	
 	auto survivorPawn = Cast<ASurvivorPawn>(m_OwnerPawn);
 	if (!survivorPawn) return EBTNodeResult::Failed;
 	
-	auto BB = OwnerComp.GetAIOwner()->GetBlackboardComponent();
-	if (!BB) return EBTNodeResult::Failed;
+	m_BlackboardComponent = OwnerComp.GetAIOwner()->GetBlackboardComponent();
+	if (!m_BlackboardComponent) return EBTNodeResult::Failed;
 	
-	m_Path = survivorPawn->CalculatePath(BB->GetValueAsVector(FName("TargetLocation")));
+	m_Path = survivorPawn->CalculatePath(m_BlackboardComponent->GetValueAsVector(FName("TargetLocation")));
 	
 	if (m_Path.IsEmpty()) return EBTNodeResult::Succeeded;
 	
@@ -92,6 +93,9 @@ desiredVelocity.ToString());
 	desiredVelocity.Z = 0;
 	desiredVelocity.Normalize();
 	
+	FVector purgeAvoidance = PurgeAvoidance();
 	
-	return desiredVelocity;
+	FVector finalVelocity= desiredVelocity + (purgeAvoidance*5.f);
+	
+	return finalVelocity;
 }

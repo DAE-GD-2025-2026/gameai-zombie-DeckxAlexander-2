@@ -56,7 +56,7 @@ void UBTT_ShootZombie::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMe
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 	}
 	
-	if ( TurnTowardsZombie(m_ClosestZombie, DeltaSeconds))
+	if ( AimTowardsZombie(m_ClosestZombie, DeltaSeconds))
 	{
 		m_Inventory->UseItem(m_WeaponSlot);
 	
@@ -118,12 +118,12 @@ AActor* UBTT_ShootZombie::GetClosestZombie(TArray<AActor*> zombies)
 		
 	}
 	
-	if (FVector::DistSquared(result->GetActorLocation(), m_OwnerPawn->GetActorLocation()) > (600*600)) result = nullptr;
+	if (result && FVector::DistSquared(result->GetActorLocation(), m_OwnerPawn->GetActorLocation()) > (600*600)) result = nullptr;
 	
 	return result;
 }
 
-bool UBTT_ShootZombie::TurnTowardsZombie(AActor* target, float deltaTime)
+bool UBTT_ShootZombie::AimTowardsZombie(AActor* target, float deltaTime)
 {
 	FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(m_OwnerPawn->GetActorLocation(),target->GetActorLocation());
 	
@@ -143,6 +143,23 @@ bool UBTT_ShootZombie::TurnTowardsZombie(AActor* target, float deltaTime)
 			NewRotation.Yaw,
 			TargetRotation.Yaw));
 
+	FHitResult hitResult;
+	const bool bHit = GetWorld()->LineTraceSingleByChannel(hitResult,m_OwnerPawn->GetActorLocation(),target->GetActorLocation(),ECC_WorldStatic);
+	
+	if (!bHit)
+	{
+		DrawDebugSphere(
+			GetWorld(),
+			hitResult.Location,
+			50.f,
+			12,
+			bHit ? FColor::Red : FColor::Green,
+			false,
+			0.f
+		);
+		return false;
+	}
+	
 	if (YawDifference < 2.0f) 
 	{
 		return true;

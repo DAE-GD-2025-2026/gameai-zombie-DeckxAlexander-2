@@ -33,7 +33,7 @@ protected:
 	int GetWeaponSlot(UInventoryComponent* inventory);
 	AActor* GetClosestZombie(TArray<AActor*> zombies);
 	
-	bool TurnTowardsZombie(AActor* target, float deltaTime);
+	bool AimTowardsZombie(AActor* target, float deltaTime);
 	
 private:
 	APawn* m_OwnerPawn{};
@@ -41,5 +41,8 @@ private:
 	AActor* m_ClosestZombie{};
 	UInventoryComponent* m_Inventory{};
 	UStudentPerceptor* m_Perceptor{};
+	
+	
 	int m_WeaponSlot{};
+	bool m_WeaponIsShotgun{false};
 };

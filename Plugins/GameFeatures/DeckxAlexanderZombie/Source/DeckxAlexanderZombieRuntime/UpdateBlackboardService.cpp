@@ -61,7 +61,10 @@ void UUpdateBlackboardService::CheckItems(UStudentPerceptor* perceptor, UBlackbo
 
 void UUpdateBlackboardService::CheckPurgeZones(UStudentPerceptor* perceptor, UBlackboardComponent* bb)
 {
-	bb->SetValueAsObject(FName("TargetPurge"), perceptor->GetClosestPurgeZone());
+	if (!perceptor || !bb) return;
+	auto purgezone = perceptor->GetClosestPurgeZone();
+	if (!IsValid(purgezone)) purgezone = nullptr;
+	bb->SetValueAsObject(FName("TargetPurge"), purgezone);
 }
 
 void UUpdateBlackboardService::CheckHouses(UStudentPerceptor* perceptor, UBlackboardComponent* bb)

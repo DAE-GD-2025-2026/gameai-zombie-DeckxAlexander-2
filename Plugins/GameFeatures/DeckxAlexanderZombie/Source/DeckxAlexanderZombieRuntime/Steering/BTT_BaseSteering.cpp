@@ -3,6 +3,9 @@
 
 #include "BTT_BaseSteering.h"
 #include "AIController.h"
+#include "BehaviorTree/BlackboardComponent.h"
+#include "PurgeZones/PurgeZone.h"
+
 
 UBTT_BaseSteering::UBTT_BaseSteering()
 {
@@ -12,6 +15,9 @@ UBTT_BaseSteering::UBTT_BaseSteering()
 EBTNodeResult::Type UBTT_BaseSteering::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	m_OwnerPawn = Cast<APawn>(OwnerComp.GetAIOwner()->GetPawn());
+	m_BlackboardComponent = OwnerComp.GetAIOwner()->GetBlackboardComponent();
+	if (!m_BlackboardComponent) return EBTNodeResult::Failed;	
+	
 	m_CollisionQueryParams.AddIgnoredActor(m_OwnerPawn);
 	return EBTNodeResult::InProgress;
 }
@@ -71,6 +77,21 @@ FVector UBTT_BaseSteering::CalculateObstacleAvoidance()
 	}
 	
 	return avoidanceVector;
+	
+}
+
+FVector UBTT_BaseSteering::PurgeAvoidance()
+{
+	auto targetPurgeZone = Cast<APurgeZone>(m_BlackboardComponent->GetValueAsObject(FName("TargetPurge")));
+	if (!targetPurgeZone) return FVector::ZeroVector;
+	
+	FVector2D AgentPos = FVector2D(m_OwnerPawn->GetActorLocation());
+	FVector2D TargetPos = FVector2D(targetPurgeZone->GetActorLocation());
+	FVector2D DesiredVelocity = (AgentPos - TargetPos).GetSafeNormal();
+	
+	
+	if((AgentPos - TargetPos).Length() < 500.f) return {DesiredVelocity.X, DesiredVelocity.Y, 0.f};
+	return FVector::ZeroVector;
 	
 }
 
