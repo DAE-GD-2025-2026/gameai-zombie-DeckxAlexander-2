@@ -15,6 +15,8 @@ UUpdateBlackboardService::UUpdateBlackboardService()
 	RandomDeviation = 0.2f;
 }
 
+
+
 void UUpdateBlackboardService::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
 	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
@@ -32,6 +34,7 @@ void UUpdateBlackboardService::TickNode(UBehaviorTreeComponent& OwnerComp, uint8
 	CheckHouses(perceptor, BB);
 	CheckZombies(perceptor, BB, Survivor->GetActorLocation());
 	CheckSurvivorStats(Survivor, BB);
+	CheckPurgeZones(perceptor, BB);
 	auto inventory = Survivor->GetComponentByClass<UInventoryComponent>();
 	CheckItemsInInventory(inventory, BB);
 	
@@ -56,9 +59,14 @@ void UUpdateBlackboardService::CheckItems(UStudentPerceptor* perceptor, UBlackbo
 	
 }
 
+void UUpdateBlackboardService::CheckPurgeZones(UStudentPerceptor* perceptor, UBlackboardComponent* bb)
+{
+	bb->SetValueAsObject(FName("TargetPurge"), perceptor->GetClosestPurgeZone());
+}
+
 void UUpdateBlackboardService::CheckHouses(UStudentPerceptor* perceptor, UBlackboardComponent* bb)
 {
-	if (perceptor->GetSeenHouses().Num() > 0) bb->SetValueAsBool(FName("SeenHouse"), true);
+	bb->SetValueAsBool(FName("SeenHouse"), perceptor->GetSeenHouses().Num() > 0);
 	bool newInHouse = perceptor->CheckIfInHouse();
 	bb->SetValueAsBool(FName("isInHouse"), newInHouse);
 	bb->SetValueAsObject(FName("CurrentHouse"), perceptor->GetCurrentHouse());

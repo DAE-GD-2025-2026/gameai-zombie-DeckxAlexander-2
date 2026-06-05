@@ -40,6 +40,18 @@ public:
 	
 	AActor* GetCurrentHouse() const {return m_CurrentHouse;}
 	
+	void ClearItemsInMemory()
+	{
+		m_ItemsInMemory.Empty();
+	}
+	
+	void ClearHousesInMemory()
+	{
+		m_ExploredHouses.Empty();
+	}
+	
+	AActor* GetClosestPurgeZone();
+	
 private:
 	
 	//Itens
@@ -63,6 +75,9 @@ private:
 	TArray<AActor*> m_SeenZombies{};
 	TArray<AActor*> m_KilledZombies{};
 	
+	
+	void AddPurgeZoneToMemory(AActor* Actor);
+	TArray<AActor*> m_PurgeZones{};
 	
 
 };

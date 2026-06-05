@@ -54,6 +54,37 @@ void UStudentPerceptor::OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 	
 }
 
+AActor* UStudentPerceptor::GetClosestPurgeZone()
+{
+	if (m_PurgeZones.IsEmpty()) return nullptr;
+	float finalDistance{FLT_MAX};
+	AActor* outActor{nullptr};
+	TArray<AActor*> garbageActors; //Incase actors are deleted
+	for (AActor* actor : m_PurgeZones)
+	{
+		if (!actor || !IsValid(actor))
+		{
+			garbageActors.Add(actor);
+			continue;
+		}
+		
+		float dist = FVector::DistSquared(GetOwner()->GetActorLocation(), actor->GetActorLocation());
+		if (dist < finalDistance)
+		{
+			finalDistance = dist;
+			outActor = actor;
+		}
+	}
+	
+	for (AActor* actor : garbageActors)
+	{
+		m_PurgeZones.Remove(actor);
+	}
+	
+	if (finalDistance > 2000*2000) return nullptr;
+	return outActor;
+}
+
 void UStudentPerceptor::AddItemToSeen(AActor* Actor)
 {
 	if (m_SeenItems.Contains(Actor)) return;
@@ -183,6 +214,12 @@ void UStudentPerceptor::AddZombieToMemory(AActor* Actor)
 	m_SeenZombies.Add(Actor);
 	
 	
+}
+
+void UStudentPerceptor::AddPurgeZoneToMemory(AActor* Actor)
+{
+	if (m_PurgeZones.Contains(Actor)) return;
+	m_PurgeZones.Add(Actor);
 }
 
 

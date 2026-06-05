@@ -21,6 +21,7 @@ public:
 	UUpdateBlackboardService();
 
 protected:
+	
 	virtual void TickNode(
 		UBehaviorTreeComponent& OwnerComp,
 		uint8* NodeMemory,
@@ -28,6 +29,7 @@ protected:
 	
 	
 	void CheckItems(UStudentPerceptor* perceptor, UBlackboardComponent* bb);
+	void CheckPurgeZones(UStudentPerceptor* perceptor, UBlackboardComponent* bb);
 	void CheckHouses(UStudentPerceptor* perceptor, UBlackboardComponent* bb);
 	void CheckZombies(UStudentPerceptor* perceptor, UBlackboardComponent* bb, FVector survivorLoc);
 	

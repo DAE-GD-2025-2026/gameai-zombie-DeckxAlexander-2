@@ -34,7 +34,16 @@ FVector UBTT_WanderAround::CalculateDesiredVelocity()
 	Displacement *= m_Radius;
 	FVector2D WanderTarget = CircleCenter + Displacement;
 	FVector2D DesiredVelocity = (WanderTarget - AgentPos).GetSafeNormal();
-	return {DesiredVelocity.X, DesiredVelocity.Y, 0};
+	
+	FVector wanderVelocity = {DesiredVelocity.X, DesiredVelocity.Y, 0};
+	FVector avoidanceVelocity = CalculateObstacleAvoidance();
+	
+	
+	FVector finalVelocity = wanderVelocity + avoidanceVelocity * 1;
+	finalVelocity.Z = 0;
+	finalVelocity.Normalize();
+	
+	return finalVelocity;
 }
 
 

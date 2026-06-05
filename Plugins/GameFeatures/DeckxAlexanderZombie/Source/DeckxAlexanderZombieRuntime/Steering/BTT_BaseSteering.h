@@ -27,8 +27,15 @@ protected:
 		float DeltaSeconds) override;
 	
 	void RotateTowardsMovement(APawn* Pawn, FVector movementdir,  float DeltaTime);
+	FVector CalculateObstacleAvoidance();
+	
 	
 	virtual FVector CalculateDesiredVelocity() {return FVector::ZeroVector;}
 	
 	APawn* m_OwnerPawn;
+	
+private:
+	FVector CalculateAvoidanceInDirection(const FVector& position, const FVector& direction, float lookAheadDistance, float weight);
+	
+	FCollisionQueryParams m_CollisionQueryParams;
 };
