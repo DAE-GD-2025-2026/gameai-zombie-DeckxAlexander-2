@@ -18,10 +18,12 @@ EBTNodeResult::Type UBTT_LookAround::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 	APawn* Survivor = Cast<APawn>(AIController->GetPawn());
 	m_OwnerPawn = Survivor;
 	if (!Survivor)return EBTNodeResult::Failed;
-	UBlackboardComponent* BB = OwnerComp.GetBlackboardComponent();
-	if (!BB) return  EBTNodeResult::Failed;
-
-	BB->SetValueAsBool(FName("LookAround"), false);
+	m_Blackboard = OwnerComp.GetBlackboardComponent();
+	if (!m_Blackboard) return  EBTNodeResult::Failed;
+	m_Perceptor = Survivor->FindComponentByClass<UStudentPerceptor>();
+	if (!m_Perceptor) return EBTNodeResult::Failed;
+	
+	m_Blackboard->SetValueAsBool(FName("LookAround"), false);
 	
 	m_AccumulatedYaw = 0.f;
 	m_TargetYaw = 360.f;
@@ -40,6 +42,13 @@ void UBTT_LookAround::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMem
 	FRotator Rot = m_OwnerPawn->GetActorRotation();
 	Rot.Yaw += Step;
 	m_OwnerPawn->SetActorRotation(Rot);
+	
+
+	if (m_Perceptor->GetSeenZombies().Num() > 0)
+	{
+		m_Blackboard->SetValueAsBool(FName("ZombieClose"), true);
+	}
+	
 
 	if (m_AccumulatedYaw >= m_TargetYaw)
 	{

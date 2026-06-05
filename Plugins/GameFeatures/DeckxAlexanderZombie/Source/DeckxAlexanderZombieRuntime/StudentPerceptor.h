@@ -8,6 +8,7 @@
 #include "Perception/AISenseConfig_Sight.h"
 #include "Perception/AISenseConfig_Damage.h"
 #include "Perception/AISense_Damage.h"
+#include "Items/BaseItem.h"
 #include "StudentPerceptor.generated.h"
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
@@ -26,7 +27,7 @@ public:
 	
 	
 	const TArray<AActor*>& GetSeenItems() {return m_SeenItems;};
-	const TArray<AActor*>& GetItemMemory() {return m_ItemsInMemory;};
+	const TArray<AActor*>& GetItemMemory() {return m_ItemsVisited;};
 	const TArray<AActor*>& GetSeenHouses() {return m_SeenUnExploredHouses;};
 	const TArray<AActor*>& GetSeenZombies() {return m_SeenZombies;};
 	
@@ -42,7 +43,7 @@ public:
 	
 	void ClearItemsInMemory()
 	{
-		m_ItemsInMemory.Empty();
+		m_ItemsVisited.Empty();
 	}
 	
 	void ClearHousesInMemory()
@@ -52,13 +53,16 @@ public:
 	
 	AActor* GetClosestPurgeZone();
 	
+	AActor* GetClosestItemOfTypeInMemory(EItemType type);
+	
 private:
 	
 	//Itens
 	void AddItemToSeen(AActor* Actor);
 
 	TArray<AActor*> m_SeenItems{};
-	TArray<AActor*> m_ItemsInMemory{};
+	TArray<AActor*> m_ItemsVisited{};
+	TArray<AActor*> m_ItemsMemory{};
 	
 	
 	//Houses

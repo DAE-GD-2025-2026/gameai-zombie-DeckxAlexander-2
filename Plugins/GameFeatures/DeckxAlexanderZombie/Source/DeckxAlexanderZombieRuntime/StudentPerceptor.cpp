@@ -33,9 +33,7 @@ void UStudentPerceptor::BeginPlay()
 
 void UStudentPerceptor::OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 {
-
-	
-	
+	if (!Actor) return;
 	if (Actor->IsA(AHouse::StaticClass()))
 	{
 		AddHouseToMemory(Actor);
@@ -96,6 +94,41 @@ AActor* UStudentPerceptor::GetClosestPurgeZone()
 	return outActor;
 }
 
+AActor* UStudentPerceptor::GetClosestItemOfTypeInMemory(EItemType type)
+{
+	float maxDistance{FLT_MAX};
+	AActor* chosenItem = nullptr;
+	
+	
+	TArray<AActor*> invalidActors{};
+	for (AActor* actor : m_ItemsMemory)
+	{
+		if (!actor || !IsValid(actor))
+		{
+			invalidActors.Add(actor);
+			continue;
+		}
+		
+		auto item = Cast<ABaseItem>(actor);
+		if (item && IsValid(item) && item->GetItemType() == type)
+		{
+			float dist = FVector::DistSquared(GetOwner()->GetActorLocation(), actor->GetActorLocation());
+			if (dist < maxDistance )
+			{
+				maxDistance = dist;
+				chosenItem = actor;
+			}
+		}
+	}
+	
+	for (auto invalid : invalidActors) //Cleanup Items Memory
+	{
+		m_ItemsMemory.Remove(invalid);
+	}
+	
+	return chosenItem;
+}
+
 void UStudentPerceptor::AddItemToSeen(AActor* Actor)
 {
 	if (m_SeenItems.Contains(Actor)) return;
@@ -115,15 +148,11 @@ void UStudentPerceptor::AddItemToSeen(AActor* Actor)
 void UStudentPerceptor::SetItemInMemory(AActor* Actor)
 {
 	m_SeenItems.Remove(Actor);
-	if (m_ItemsInMemory.Contains(Actor)) return;
-	m_ItemsInMemory.Add(Actor);
+	if (m_ItemsVisited.Contains(Actor)) return;
+	m_ItemsVisited.Add(Actor);
+	if (m_ItemsMemory.Contains(Actor)) return;
+	m_ItemsMemory.Add(Actor);
 	
-	FVector actorloc = GetOwner()->GetActorLocation();
-	m_ItemsInMemory.Sort([&](const AActor& A, const AActor& B)
-	{
-	return FVector::DistSquared(A.GetActorLocation(), actorloc)
-	 < FVector::DistSquared(B.GetActorLocation(), actorloc);
-	});
 }
 
 void UStudentPerceptor::AddHouseToMemory(AActor* Actor)
@@ -209,7 +238,8 @@ void UStudentPerceptor::SetZombieKilled(AActor* Actor)
 void UStudentPerceptor::RemoveItemFromMemory(AActor* Actor)
 {
 	m_SeenItems.Remove(Actor);
-	m_ItemsInMemory.Remove(Actor);
+	m_ItemsVisited.Remove(Actor);
+	m_ItemsMemory.Remove(Actor);
 }
 
 void UStudentPerceptor::SetHouseAsExplored(AActor* Actor)

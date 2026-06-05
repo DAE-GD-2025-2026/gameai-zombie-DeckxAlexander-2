@@ -32,7 +32,7 @@ void UUpdateBlackboardService::TickNode(UBehaviorTreeComponent& OwnerComp, uint8
 	
 	CheckItems(perceptor, BB);
 	CheckHouses(perceptor, BB);
-	CheckZombies(perceptor, BB, Survivor->GetActorLocation());
+	CheckZombies(perceptor, BB, Survivor);
 	CheckSurvivorStats(Survivor, BB);
 	CheckPurgeZones(perceptor, BB);
 	auto inventory = Survivor->GetComponentByClass<UInventoryComponent>();
@@ -76,16 +76,17 @@ void UUpdateBlackboardService::CheckHouses(UStudentPerceptor* perceptor, UBlackb
 	
 }
 
-void UUpdateBlackboardService::CheckZombies(UStudentPerceptor* perceptor, UBlackboardComponent* bb, FVector survivorLoc)
+void UUpdateBlackboardService::CheckZombies(UStudentPerceptor* perceptor, UBlackboardComponent* bb, APawn* Survivor)
 {
-	bool zombieClose = false;
+	m_ZombieClose = false;
 	for (auto actor : perceptor->GetSeenZombies())
 	{
-		if (FVector::DistSquared(actor->GetActorLocation(), survivorLoc) > (600*600)) continue;
-		zombieClose = true;
+		if (FVector::DistSquared(actor->GetActorLocation(), Survivor->GetActorLocation()) > (600*600)) continue;
+		m_ZombieClose = true;
 
 	}
-	bb->SetValueAsBool(FName("ZombieClose"), zombieClose);
+	bb->SetValueAsBool(FName("ZombieClose"), m_ZombieClose);
+	
 }
 
 void UUpdateBlackboardService::CheckSurvivorStats(APawn* survivorPawn, UBlackboardComponent* bb)
@@ -95,7 +96,7 @@ void UUpdateBlackboardService::CheckSurvivorStats(APawn* survivorPawn, UBlackboa
 	bool lowStamina = false;
 	
 	float health = healthComponent->GetHealth();
-	if (healthComponent && health < 3.f)
+	if (healthComponent && health < 6.f)
 	{
 		lowHealth = true;
 	}
@@ -110,7 +111,7 @@ void UUpdateBlackboardService::CheckSurvivorStats(APawn* survivorPawn, UBlackboa
 	bb->SetValueAsBool(FName("LowStamina"), lowStamina);
 	
 	//Check Health for unknown damaged
-	if (health < m_PreviousHealth && bb->GetValueAsBool(FName("ZombieClose")) == false)
+	if (health < m_PreviousHealth && !m_ZombieClose)
 	{
 		bb->SetValueAsBool(FName("LookAround"), true);
 	}

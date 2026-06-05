@@ -30,6 +30,7 @@ EBTNodeResult::Type UBTT_PickupItem::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 	
 	if (!item || !IsValid(item)) //incase the item is invalid
 	{
+		perceptor->RemoveItemFromMemory(item);
 		BB->SetValueAsObject(FName("TargetItem"), nullptr);
 		BB->SetValueAsBool(FName("SeenItem"), false);
 		return EBTNodeResult::Failed;

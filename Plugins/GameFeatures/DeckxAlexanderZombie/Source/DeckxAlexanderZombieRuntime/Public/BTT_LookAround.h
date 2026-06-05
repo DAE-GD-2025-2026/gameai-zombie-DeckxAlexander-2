@@ -6,6 +6,8 @@
 #include "BehaviorTree/BTTaskNode.h"
 #include "BTT_LookAround.generated.h"
 
+class UStudentPerceptor;
+class UBlackboardComponent;
 /**
  * 
  */
@@ -33,4 +35,6 @@ private:
 	float m_TargetYaw = 360.f;
 	
 	APawn* m_OwnerPawn{};
+	UStudentPerceptor* m_Perceptor;
+	UBlackboardComponent* m_Blackboard;
 };

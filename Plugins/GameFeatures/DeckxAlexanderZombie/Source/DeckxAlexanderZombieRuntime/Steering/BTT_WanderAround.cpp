@@ -3,11 +3,20 @@
 
 #include "BTT_WanderAround.h"
 #include "AIController.h"
+#include "Survivor/SurvivorPawn.h"
 
 UBTT_WanderAround::UBTT_WanderAround()
 {
 	NodeName = "WanderAround";
 	bNotifyTick = true;
+}
+
+EBTNodeResult::Type UBTT_WanderAround::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+{
+	Super::ExecuteTask(OwnerComp, NodeMemory);
+	
+	
+	return EBTNodeResult::InProgress;
 }
 
 FVector UBTT_WanderAround::CalculateDesiredVelocity()

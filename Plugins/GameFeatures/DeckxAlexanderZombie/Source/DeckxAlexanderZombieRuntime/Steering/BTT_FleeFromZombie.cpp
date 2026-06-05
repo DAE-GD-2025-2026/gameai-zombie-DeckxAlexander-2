@@ -5,6 +5,7 @@
 #include "AIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "DeckxAlexanderZombieRuntime/StudentPerceptor.h"
+#include "Survivor/SurvivorPawn.h"
 #include "Zombies/BaseZombie.h"
 
 UBTT_FleeFromZombie::UBTT_FleeFromZombie()
@@ -71,7 +72,7 @@ FVector UBTT_FleeFromZombie::CalculateDesiredVelocity()
 	
 	FVector avoidanceVelocity = CalculateObstacleAvoidance();
 	FVector purgeAvoidanceVelocity = PurgeAvoidance();
-	FVector finalVelocity = velocity + (avoidanceVelocity*0.5f) + (purgeAvoidanceVelocity*5.f);
+	FVector finalVelocity = velocity + (avoidanceVelocity*2.f) + (purgeAvoidanceVelocity*5.f);
 	
 	return finalVelocity;
 }

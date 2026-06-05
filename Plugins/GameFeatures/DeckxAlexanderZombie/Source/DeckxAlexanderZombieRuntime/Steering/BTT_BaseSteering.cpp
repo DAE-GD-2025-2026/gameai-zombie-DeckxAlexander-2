@@ -90,7 +90,7 @@ FVector UBTT_BaseSteering::PurgeAvoidance()
 	FVector2D DesiredVelocity = (AgentPos - TargetPos).GetSafeNormal();
 	
 	
-	if((AgentPos - TargetPos).Length() < 500.f) return {DesiredVelocity.X, DesiredVelocity.Y, 0.f};
+	if((AgentPos - TargetPos).Length() < 250.f) return {DesiredVelocity.X, DesiredVelocity.Y, 0.f};
 	return FVector::ZeroVector;
 	
 }

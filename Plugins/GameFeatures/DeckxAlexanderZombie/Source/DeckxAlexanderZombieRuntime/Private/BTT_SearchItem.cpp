@@ -39,6 +39,12 @@ EBTNodeResult::Type UBTT_SearchItem::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 	{
 		auto item = Cast<ABaseItem>(actor);
 		
+		if (!item || !IsValid(item))
+		{
+			itemsSkipped.Add(item);
+			continue;
+		}
+		
 		if (Priorities.Contains(item->GetItemType()))
 		{
 			closestItem = item;
@@ -63,6 +69,11 @@ EBTNodeResult::Type UBTT_SearchItem::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 	
 	for (auto item : itemsSkipped)
 	{
+		if (!item || !IsValid(item))
+		{
+			perceptor->RemoveItemFromMemory(item);
+			continue;
+		}
 		perceptor->SetItemInMemory(item);
 	}
 	

@@ -81,7 +81,7 @@ FVector UBTT_SteeringMoveTo::CalculateDesiredVelocity()
 	
 	FVector purgeAvoidance = PurgeAvoidance();
 	
-	FVector finalVelocity= desiredVelocity + (purgeAvoidance*0.5f);
+	FVector finalVelocity= desiredVelocity + (purgeAvoidance);
 	
 	return finalVelocity;
 }
