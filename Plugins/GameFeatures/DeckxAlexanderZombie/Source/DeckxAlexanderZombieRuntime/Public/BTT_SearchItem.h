@@ -11,6 +11,7 @@
  * 
  */
 class UInventoryComponent;
+class UBlackboardComponent;
 UCLASS()
 class DECKXALEXANDERZOMBIERUNTIME_API UBTT_SearchItem : public UBTTaskNode
 {
@@ -26,5 +27,6 @@ protected:
 	uint8* NodeMemory) override;
 	
 	bool IsInventoryFull(UInventoryComponent* inventory);
-
+	int GetInventoryItemCount(UInventoryComponent* inventory);
+	TArray<EItemType> GetPriorities( UBlackboardComponent* bb, UInventoryComponent* inventory);
 };

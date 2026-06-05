@@ -22,24 +22,9 @@ EBTNodeResult::Type UBTT_SearchItem::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 	UStudentPerceptor* perceptor = Survivor->FindComponentByClass<UStudentPerceptor>();
 	if (!perceptor) return EBTNodeResult::Failed;
 	
-
-	//Check Priorities
-	TArray<EItemType> Priorities;
-	//float health = BB->GetValueAsFloat(FName("Health"));
-	//float stamina = BB->GetValueAsFloat(FName("Stamina"));
-	//bool hasWeapon =  BB->GetValueAsBool(FName("HasWeapon"));
-	//if (health < 30.f) priorities.Add(EItemType::Medkit);
-	//if (stamina < 50.f) priorities.Add(EItemType::Food);
-	//if (hasWeapon == false)
-	//{
-		//priorities.Add(EItemType::Pistol);
-		//priorities.Add(EItemType::Shotgun);
-	//}
-	
-	
-	
-	
 	UInventoryComponent* inventory = Survivor->FindComponentByClass<UInventoryComponent>();
+	TArray<EItemType> Priorities = GetPriorities(BB, inventory);
+
 	
 	if (perceptor->GetSeenItems().Num() == 0)
 	{
@@ -47,21 +32,33 @@ EBTNodeResult::Type UBTT_SearchItem::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 		return EBTNodeResult::Failed;
 	}
 	
-	ABaseItem* closestItem = Cast<ABaseItem>(perceptor->GetSeenItems()[0]);
+	ABaseItem* closestItem = nullptr;
 	TArray<ABaseItem*> itemsSkipped{};
 	
 	for (AActor* actor : perceptor->GetSeenItems() )
 	{
 		auto item = Cast<ABaseItem>(actor);
-		if ((Priorities.IsEmpty()&& !IsInventoryFull(inventory)) || Priorities.Contains(item->GetItemType()))
+		
+		if (Priorities.Contains(item->GetItemType()))
 		{
 			closestItem = item;
 			break;
+		}
+		
+		if ( !IsInventoryFull(inventory))
+		{
+			if (Priorities.IsEmpty())
+			{
+				closestItem = item;
+				break;
+			}
+			
+			closestItem = item;
 			
 		}
-		itemsSkipped.Add(item);
-		continue;
+
 		
+		if (closestItem != item) itemsSkipped.Add(item);
 	}
 	
 	for (auto item : itemsSkipped)
@@ -69,26 +66,8 @@ EBTNodeResult::Type UBTT_SearchItem::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 		perceptor->SetItemInMemory(item);
 	}
 	
-
 	
-	/*if (!Priorities.IsEmpty())
-	{
-		//Inacse needed item not seen
-		auto memory = perceptor->GetItemMemory();
-		for (auto itemtype : Priorities)
-		{
-			if (AActor** result = memory.FindByPredicate([itemtype](const AActor* Actor){auto item = Cast<ABaseItem>(Actor);
-				return item->GetItemType() == itemtype;}))
-			{
-				auto itemresult = Cast<ABaseItem>(*result);
-				BB->SetValueAsObject(FName("TargetItem"), itemresult);
-				BB->SetValueAsVector(FName("TargetLocation"), itemresult->GetActorLocation());
-				return EBTNodeResult::Succeeded;
-			}
-		}
-	}*/
-	
-	if (closestItem && !IsInventoryFull(inventory))
+	if (closestItem)
 	{
 		BB->SetValueAsObject(FName("TargetItem"), closestItem);
 		BB->SetValueAsVector(FName("TargetLocation"), closestItem->GetActorLocation());
@@ -108,5 +87,65 @@ bool UBTT_SearchItem::IsInventoryFull(UInventoryComponent* inventory)
 		if (!item)return false;
 	}
 	return true;
+}
+
+int UBTT_SearchItem::GetInventoryItemCount(UInventoryComponent* inventory)
+{
+	if (!inventory) return 0;
+	int count = 0;
+	for (auto item : inventory->GetInventory())
+	{
+		if (item) count++;
+	}
+	return count;
+}
+
+TArray<EItemType> UBTT_SearchItem::GetPriorities( UBlackboardComponent* bb, UInventoryComponent* inventory)
+{
+	if (!bb) return {};
+	
+	int itemCount = GetInventoryItemCount(inventory);
+	
+	bool needsWeapon = (!bb->GetValueAsBool(FName("hasWeapon")) &&  bb->GetValueAsBool(FName("ZombieClose")))
+	|| (itemCount > 2 && !bb->GetValueAsBool(FName("hasWeapon")) );
+	bool needsMedkit = ( itemCount > 2 && !bb->GetValueAsBool(FName("HasMedkit")) );
+	bool needsFood = ( itemCount > 2 && !bb->GetValueAsBool(FName("HasFood")) );
+	
+	
+	TArray<EItemType> prioritiesReturn;
+	
+	if (needsMedkit) prioritiesReturn.Add(EItemType::Medkit);
+	if (needsFood) prioritiesReturn.Add(EItemType::Food);
+	if (needsWeapon)
+	{
+		prioritiesReturn.Add(EItemType::Pistol);
+		prioritiesReturn.Add(EItemType::Shotgun);
+	}
+	
+	
+	FString ItemsString;
+
+	for (const EItemType Item : prioritiesReturn)
+	{
+		if (!ItemsString.IsEmpty())
+		{
+			ItemsString += TEXT(", ");
+		}
+
+		ItemsString += StaticEnum<EItemType>()->GetNameStringByValue(
+			static_cast<int64>(Item)
+		);
+	}
+
+	GEngine->AddOnScreenDebugMessage(
+		20,
+		1.f,
+		FColor::Blue,
+		FString::Printf(TEXT("Items Priority: %s"), *ItemsString)
+	);
+	
+	
+	return prioritiesReturn;
+
 }
 

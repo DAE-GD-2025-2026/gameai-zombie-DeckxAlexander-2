@@ -24,6 +24,6 @@ protected:
 	uint8* NodeMemory) override;
 	
 	bool IsInventoryFull(UInventoryComponent* inventory);
-		
 	void CheckItems(UInventoryComponent* inventory, UBlackboardComponent* bb);
+	int CheckPriorityThrowSlot(UInventoryComponent* inventory, UBlackboardComponent* bb);
 };

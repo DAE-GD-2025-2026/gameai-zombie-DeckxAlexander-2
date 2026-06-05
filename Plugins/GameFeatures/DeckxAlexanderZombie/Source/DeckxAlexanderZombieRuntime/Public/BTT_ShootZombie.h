@@ -42,6 +42,9 @@ private:
 	UInventoryComponent* m_Inventory{};
 	UStudentPerceptor* m_Perceptor{};
 	
+	FCollisionObjectQueryParams m_ObjectParams;
+\
+	
 	
 	int m_WeaponSlot{};
 	bool m_WeaponIsShotgun{false};

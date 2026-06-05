@@ -43,6 +43,7 @@ EBTNodeResult::Type UBTT_ShootZombie::ExecuteTask(UBehaviorTreeComponent& OwnerC
 		return EBTNodeResult::Failed;
 	}
 	
+	m_ObjectParams.AddObjectTypesToQuery(ECC_WorldStatic);
 
 	return EBTNodeResult::InProgress;
 }
@@ -60,6 +61,8 @@ void UBTT_ShootZombie::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMe
 	{
 		m_Inventory->UseItem(m_WeaponSlot);
 	
+		GEngine->AddOnScreenDebugMessage(INDEX_NONE,5.f,FColor::Red,"Shot Fired!", true);
+		
 		if (m_Inventory->GetInventory()[m_WeaponSlot]->GetValue() <= 0)
 		{
 			m_Inventory->RemoveItem(m_WeaponSlot);
@@ -144,9 +147,18 @@ bool UBTT_ShootZombie::AimTowardsZombie(AActor* target, float deltaTime)
 			TargetRotation.Yaw));
 
 	FHitResult hitResult;
-	const bool bHit = GetWorld()->LineTraceSingleByChannel(hitResult,m_OwnerPawn->GetActorLocation(),target->GetActorLocation(),ECC_WorldStatic);
+	const bool bHit = GetWorld()->LineTraceSingleByObjectType(hitResult,m_OwnerPawn->GetActorLocation(),target->GetActorLocation(),m_ObjectParams);
 	
-	if (!bHit)
+	DrawDebugLine(
+	GetWorld(),
+	m_OwnerPawn->GetActorLocation(),
+	target->GetActorLocation(),
+	bHit ? FColor::Red : FColor::Green,
+	false,
+	0.f
+);
+	
+	if (bHit)
 	{
 		DrawDebugSphere(
 			GetWorld(),

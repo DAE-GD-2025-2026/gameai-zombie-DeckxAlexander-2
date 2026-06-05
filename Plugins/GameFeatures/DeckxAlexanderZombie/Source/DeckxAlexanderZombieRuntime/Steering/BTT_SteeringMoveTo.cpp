@@ -45,15 +45,7 @@ void UBTT_SteeringMoveTo::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 	m_OwnerPawn->AddMovementInput(movementdir);
 	RotateTowardsMovement(m_OwnerPawn, movementdir, DeltaSeconds);
 	
-	GEngine->AddOnScreenDebugMessage(
-		5,
-		1.f,
-		FColor::Orange,
-		FString::Printf(TEXT("DistSq: %.2f"),
-			FVector::DistSquared(
-				m_CurrentTargetLocation,
-				m_OwnerPawn->GetActorLocation()))
-	);
+
 	
 	if (FVector::DistSquared(m_CurrentTargetLocation, m_OwnerPawn->GetActorLocation()) < (50*50))
 	{
@@ -83,19 +75,13 @@ FVector UBTT_SteeringMoveTo::CalculateDesiredVelocity()
 {
 	FVector desiredVelocity = m_CurrentTargetLocation - m_OwnerPawn->GetActorLocation();
 	
-	GEngine->AddOnScreenDebugMessage(6, 1.f, FColor::Green, 
-m_CurrentTargetLocation.ToString());
-	GEngine->AddOnScreenDebugMessage(7, 1.f, FColor::Green, 
-m_OwnerPawn->GetActorLocation().ToString());
-	GEngine->AddOnScreenDebugMessage(8, 1.f, FColor::Orange, 
-desiredVelocity.ToString());
 	
 	desiredVelocity.Z = 0;
 	desiredVelocity.Normalize();
 	
 	FVector purgeAvoidance = PurgeAvoidance();
 	
-	FVector finalVelocity= desiredVelocity + (purgeAvoidance*5.f);
+	FVector finalVelocity= desiredVelocity + (purgeAvoidance*0.5f);
 	
 	return finalVelocity;
 }
