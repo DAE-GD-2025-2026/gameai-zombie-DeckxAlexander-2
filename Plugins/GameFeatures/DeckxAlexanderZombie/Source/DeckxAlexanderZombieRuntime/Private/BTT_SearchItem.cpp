@@ -104,12 +104,26 @@ TArray<EItemType> UBTT_SearchItem::GetPriorities( UBlackboardComponent* bb, UInv
 {
 	if (!bb) return {};
 	
+	//Prioritize based survivor state
+	if (bb->GetValueAsBool(FName("ZombieClose")) && !bb->GetValueAsBool(FName("hasWeapon")))
+	{
+		return {EItemType::Pistol, EItemType::Shotgun};
+	}
+	if (bb->GetValueAsBool(FName("LowHealth")) && !bb->GetValueAsBool(FName("HasMedkit")))
+	{
+		return {EItemType::Medkit};
+	}
+	if (bb->GetValueAsBool(FName("LowStamina")) && !bb->GetValueAsBool(FName("HasFood")))
+	{
+		return {EItemType::Food};
+	}
+	
+	//Prioritize based on inventory state
 	int itemCount = GetInventoryItemCount(inventory);
 	
-	bool needsWeapon = (!bb->GetValueAsBool(FName("hasWeapon")) &&  bb->GetValueAsBool(FName("ZombieClose")))
-	|| (itemCount > 2 && !bb->GetValueAsBool(FName("hasWeapon")) );
+	bool needsWeapon = (itemCount > 2 && !bb->GetValueAsBool(FName("hasWeapon")) );
 	bool needsMedkit = ( itemCount > 2 && !bb->GetValueAsBool(FName("HasMedkit")) );
-	bool needsFood = ( itemCount > 2 && !bb->GetValueAsBool(FName("HasFood")) );
+	bool needsFood = ( itemCount > 2 && !bb->GetValueAsBool(FName("HasFood")) ) ;
 	
 	
 	TArray<EItemType> prioritiesReturn;
