@@ -38,4 +38,7 @@ private:
 	int m_CurrentIndex{};
 	FVector m_CurrentTargetLocation{};
 	
+	static void DrawPath(const TArray<FVector>& Points, UWorld* World);
+
+	
 };

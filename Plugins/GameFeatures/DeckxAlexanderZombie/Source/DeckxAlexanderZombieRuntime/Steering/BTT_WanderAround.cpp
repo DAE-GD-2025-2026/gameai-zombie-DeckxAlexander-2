@@ -53,6 +53,8 @@ FVector UBTT_WanderAround::CalculateDesiredVelocity()
 	finalVelocity.Z = 0;
 	finalVelocity.Normalize();
 	
+	DrawDebugLine(GetWorld(),m_OwnerPawn->GetActorLocation(),m_OwnerPawn->GetActorLocation() + finalVelocity,FColor::Green,false,0.f);
+	
 	return finalVelocity;
 }
 

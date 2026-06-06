@@ -45,7 +45,7 @@ void UBTT_SteeringMoveTo::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 	m_OwnerPawn->AddMovementInput(movementdir);
 	RotateTowardsMovement(m_OwnerPawn, movementdir, DeltaSeconds);
 	
-
+	DrawPath(m_Path, GetWorld());
 	
 	if (FVector::DistSquared(m_CurrentTargetLocation, m_OwnerPawn->GetActorLocation()) < (50*50))
 	{
@@ -84,4 +84,17 @@ FVector UBTT_SteeringMoveTo::CalculateDesiredVelocity()
 	FVector finalVelocity= desiredVelocity + (purgeAvoidance);
 	
 	return finalVelocity;
+}
+
+void UBTT_SteeringMoveTo::DrawPath(const TArray<FVector>& Points, UWorld* World)
+{
+	if (Points.Num() < 2 || !World)
+	{
+		return;
+	}
+
+	for (int32 i = 0; i < Points.Num() - 1; ++i)
+	{
+		DrawDebugLine(World,Points[i],Points[i + 1],FColor::Green,false,-1.0f,0,2.0f);
+	}
 }

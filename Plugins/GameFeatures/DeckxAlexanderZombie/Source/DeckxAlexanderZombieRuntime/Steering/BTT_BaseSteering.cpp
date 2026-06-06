@@ -89,8 +89,13 @@ FVector UBTT_BaseSteering::PurgeAvoidance()
 	FVector2D TargetPos = FVector2D(targetPurgeZone->GetActorLocation());
 	FVector2D DesiredVelocity = (AgentPos - TargetPos).GetSafeNormal();
 	
-	
-	if((AgentPos - TargetPos).Length() < 250.f) return {DesiredVelocity.X, DesiredVelocity.Y, 0.f};
+
+	if((AgentPos - TargetPos).Length() < 250.f)
+	{
+		FVector finalVelocity = {DesiredVelocity.X, DesiredVelocity.Y, 0.f};
+		DrawDebugLine(GetWorld(),m_OwnerPawn->GetActorLocation(),targetPurgeZone->GetActorLocation(),FColor::Purple,false,-1.f);
+		return finalVelocity;
+	}
 	return FVector::ZeroVector;
 	
 }
@@ -103,17 +108,12 @@ FVector UBTT_BaseSteering::CalculateAvoidanceInDirection(const FVector& position
 		ECC_WorldStatic,m_CollisionQueryParams);
 	
 	
+	DrawDebugLine(GetWorld(),position,position + direction * lookAheadDistance,
+		bHit ? FColor::Red : FColor::Green,false,0.f);
+	
 	if (!bHit) return FVector::ZeroVector;
 	
-	DrawDebugSphere(
-		GetWorld(),
-		position + direction * lookAheadDistance,
-		50.f,
-		12,
-		bHit ? FColor::Red : FColor::Green,
-		false,
-		0.f
-	);
+	DrawDebugSphere(GetWorld(),position + direction * lookAheadDistance,25.f,12,bHit ? FColor::Red : FColor::Blue,false,0.f);
 
 
 	

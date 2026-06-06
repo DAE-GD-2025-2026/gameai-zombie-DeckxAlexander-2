@@ -11,7 +11,7 @@ UBTS_ClearMemory::UBTS_ClearMemory()
 {
 	NodeName = TEXT("Clear Survivor Memory");
 
-	Interval = 10.f;
+	Interval = 20.f;
 	RandomDeviation = 1.f;
 }
 

@@ -35,5 +35,7 @@ EBTNodeResult::Type UBTT_CanFindWeapon::ExecuteTask(UBehaviorTreeComponent& Owne
 		BB->SetValueAsBool(FName("NeedWeapon"), true);
 		return EBTNodeResult::Succeeded;	
 	}
+	
+	BB->SetValueAsBool(FName("NeedWeapon"), false);
 	return EBTNodeResult::Succeeded;
 }

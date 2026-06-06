@@ -74,5 +74,7 @@ FVector UBTT_FleeFromZombie::CalculateDesiredVelocity()
 	FVector purgeAvoidanceVelocity = PurgeAvoidance();
 	FVector finalVelocity = velocity + (avoidanceVelocity*2.f) + (purgeAvoidanceVelocity*5.f);
 	
+	DrawDebugLine(GetWorld(),m_OwnerPawn->GetActorLocation(),m_OwnerPawn->GetActorLocation() + finalVelocity,FColor::Green,false,0.f);
+	
 	return finalVelocity;
 }

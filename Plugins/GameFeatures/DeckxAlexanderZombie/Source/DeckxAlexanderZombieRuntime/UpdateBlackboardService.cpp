@@ -27,20 +27,17 @@ void UUpdateBlackboardService::TickNode(UBehaviorTreeComponent& OwnerComp, uint8
 	if (!Survivor)return;
 	UBlackboardComponent* BB =OwnerComp.GetBlackboardComponent();
 	if (!BB) return;
-	UStudentPerceptor* perceptor = Survivor->FindComponentByClass<UStudentPerceptor>();
-	if (!perceptor) return;
+	if (!m_Perceptor) m_Perceptor = Survivor->FindComponentByClass<UStudentPerceptor>();
+	if (!m_Perceptor) return;
 	
-	CheckItems(perceptor, BB);
-	CheckHouses(perceptor, BB);
-	CheckZombies(perceptor, BB, Survivor);
+	CheckItems(m_Perceptor, BB);
+	CheckHouses(m_Perceptor, BB);
+	CheckZombies(m_Perceptor, BB, Survivor);
 	CheckSurvivorStats(Survivor, BB);
-	CheckPurgeZones(perceptor, BB);
+	CheckPurgeZones(m_Perceptor, BB);
 	auto inventory = Survivor->GetComponentByClass<UInventoryComponent>();
 	CheckItemsInInventory(inventory, BB);
-	
-	
-	
-	
+
 }
 
 void UUpdateBlackboardService::CheckItems(UStudentPerceptor* perceptor, UBlackboardComponent* bb)
@@ -114,8 +111,9 @@ void UUpdateBlackboardService::CheckSurvivorStats(APawn* survivorPawn, UBlackboa
 	if (health < m_PreviousHealth && !m_ZombieClose)
 	{
 		bb->SetValueAsBool(FName("LookAround"), true);
+		m_PreviousHealth = health;
 	}
-	m_PreviousHealth = health;
+	if (m_ZombieClose) m_PreviousHealth = health;
 }
 
 void UUpdateBlackboardService::CheckItemsInInventory(UInventoryComponent* inventory, UBlackboardComponent* bb)

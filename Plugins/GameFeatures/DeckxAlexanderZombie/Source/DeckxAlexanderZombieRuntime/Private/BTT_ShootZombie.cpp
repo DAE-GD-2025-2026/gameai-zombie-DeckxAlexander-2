@@ -149,26 +149,11 @@ bool UBTT_ShootZombie::AimTowardsZombie(AActor* target, float deltaTime)
 	FHitResult hitResult;
 	const bool bHit = GetWorld()->LineTraceSingleByObjectType(hitResult,m_OwnerPawn->GetActorLocation(),target->GetActorLocation(),m_ObjectParams);
 	
-	DrawDebugLine(
-	GetWorld(),
-	m_OwnerPawn->GetActorLocation(),
-	target->GetActorLocation(),
-	bHit ? FColor::Red : FColor::Green,
-	false,
-	0.f
-);
+	DrawDebugLine(GetWorld(),m_OwnerPawn->GetActorLocation(),target->GetActorLocation(),bHit ? FColor::Red : FColor::Green,false,0.f);
 	
 	if (bHit)
 	{
-		DrawDebugSphere(
-			GetWorld(),
-			hitResult.Location,
-			50.f,
-			12,
-			bHit ? FColor::Red : FColor::Green,
-			false,
-			0.f
-		);
+		DrawDebugSphere(GetWorld(),hitResult.Location,25.f,12,FColor::Red ,false,0.f);
 		return false;
 	}
 	

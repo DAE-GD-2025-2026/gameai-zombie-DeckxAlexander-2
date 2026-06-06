@@ -39,4 +39,6 @@ protected:
 private:
 	float m_PreviousHealth;
 	bool m_ZombieClose;
+	UStudentPerceptor* m_Perceptor;
+	
 };
