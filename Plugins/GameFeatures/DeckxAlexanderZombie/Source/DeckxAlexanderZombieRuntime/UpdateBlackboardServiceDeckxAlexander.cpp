@@ -1,0 +1,156 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#include "AIController.h"
+#include "StudentPerceptorDeckxAlexander.h"
+#include "BehaviorTree/BlackboardComponent.h"
+#include "Items/BaseItem.h"
+#include "UpdateBlackboardServiceDeckxAlexander.h"
+#include "Common/InventoryComponent.h"
+
+UUpdateBlackboardServiceDeckxAlexander::UUpdateBlackboardServiceDeckxAlexander()
+{
+	NodeName = TEXT("Update Blackboard");
+
+	Interval = 0.5f;
+	RandomDeviation = 0.2f;
+}
+
+
+
+void UUpdateBlackboardServiceDeckxAlexander::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
+{
+	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
+	//Get Controller and Blackboard
+	AAIController* AIController = OwnerComp.GetAIOwner();
+	if (!AIController)return;
+	APawn* Survivor = Cast<APawn>(AIController->GetPawn());
+	if (!Survivor)return;
+	UBlackboardComponent* BB =OwnerComp.GetBlackboardComponent();
+	if (!BB) return;
+	if (!m_Perceptor) m_Perceptor = Survivor->FindComponentByClass<UStudentPerceptorDeckxAlexander>();
+	if (!m_Perceptor) return;
+	
+	CheckItems(m_Perceptor, BB);
+	CheckHouses(m_Perceptor, BB);
+	CheckZombies(m_Perceptor, BB, Survivor);
+	CheckSurvivorStats(Survivor, BB);
+	CheckPurgeZones(m_Perceptor, BB);
+	auto inventory = Survivor->GetComponentByClass<UInventoryComponent>();
+	CheckItemsInInventory(inventory, BB);
+
+}
+
+void UUpdateBlackboardServiceDeckxAlexander::CheckItems(UStudentPerceptorDeckxAlexander* perceptor, UBlackboardComponent* bb)
+{
+	bb->SetValueAsBool(FName("SeenItem"), !perceptor->GetSeenItems().IsEmpty());
+	
+	GEngine->AddOnScreenDebugMessage(
+		9,
+		1.f,
+		FColor::Blue,
+		FString::Printf(
+			TEXT("Items Seen: %.2f"),
+			static_cast<float>(perceptor->GetSeenItems().Num())
+		)
+	);
+	
+}
+
+void UUpdateBlackboardServiceDeckxAlexander::CheckPurgeZones(UStudentPerceptorDeckxAlexander* perceptor, UBlackboardComponent* bb)
+{
+	if (!perceptor || !bb) return;
+	auto purgezone = perceptor->GetClosestPurgeZone();
+	if (!IsValid(purgezone)) purgezone = nullptr;
+	bb->SetValueAsObject(FName("TargetPurge"), purgezone);
+}
+
+void UUpdateBlackboardServiceDeckxAlexander::CheckHouses(UStudentPerceptorDeckxAlexander* perceptor, UBlackboardComponent* bb)
+{
+	bb->SetValueAsBool(FName("SeenHouse"), perceptor->GetSeenHouses().Num() > 0);
+	bool newInHouse = perceptor->CheckIfInHouse();
+	bb->SetValueAsBool(FName("isInHouse"), newInHouse);
+	bb->SetValueAsObject(FName("CurrentHouse"), perceptor->GetCurrentHouse());
+	
+}
+
+void UUpdateBlackboardServiceDeckxAlexander::CheckZombies(UStudentPerceptorDeckxAlexander* perceptor, UBlackboardComponent* bb, APawn* Survivor)
+{
+	m_ZombieClose = false;
+	for (auto actor : perceptor->GetSeenZombies())
+	{
+		if (FVector::DistSquared(actor->GetActorLocation(), Survivor->GetActorLocation()) > (600*600)) continue;
+		m_ZombieClose = true;
+
+	}
+	bb->SetValueAsBool(FName("ZombieClose"), m_ZombieClose);
+	
+}
+
+void UUpdateBlackboardServiceDeckxAlexander::CheckSurvivorStats(APawn* survivorPawn, UBlackboardComponent* bb)
+{
+	auto healthComponent = survivorPawn->GetComponentByClass<UHealthComponent>();
+	bool lowHealth = false;
+	bool lowStamina = false;
+	
+	float health = healthComponent->GetHealth();
+	if (healthComponent && health < 6.f)
+	{
+		lowHealth = true;
+	}
+	
+	auto staminaComponent = survivorPawn->GetComponentByClass<UStaminaComponent>();
+	
+	if (staminaComponent && staminaComponent->GetCurrentStamina() < 3.f)
+	{
+		lowStamina = true;
+	}
+	bb->SetValueAsBool(FName("LowHealth"), lowHealth);
+	bb->SetValueAsBool(FName("LowStamina"), lowStamina);
+	
+	//Check Health for unknown damaged
+	if (health < m_PreviousHealth && !m_ZombieClose)
+	{
+		bb->SetValueAsBool(FName("LookAround"), true);
+		m_PreviousHealth = health;
+	}
+	if (m_ZombieClose) m_PreviousHealth = health;
+}
+
+void UUpdateBlackboardServiceDeckxAlexander::CheckItemsInInventory(UInventoryComponent* inventory, UBlackboardComponent* bb)
+{
+	bool hasFood = false;
+	bool hasMedkit = false;
+	bool hasWeapon = false;
+	
+
+	for (auto item : inventory->GetInventory())
+	{
+		if (!item) continue;
+		auto type = item->GetItemType();
+		switch (type)
+		{
+		case EItemType::Shotgun:
+			hasWeapon = true;
+			break;
+		case EItemType::Pistol:
+			hasWeapon = true;
+			break;
+		case EItemType::Medkit:
+			hasMedkit = true;
+			break;
+		case EItemType::Food:
+			hasFood = true;
+			break;
+		case EItemType::Garbage:
+			break;
+		}
+		
+	}
+	
+	bb->SetValueAsBool(FName("HasMedkit"), hasMedkit);
+	bb->SetValueAsBool(FName("hasWeapon"), hasWeapon);
+	bb->SetValueAsBool(FName("HasFood"), hasFood);
+}
+
+
+
